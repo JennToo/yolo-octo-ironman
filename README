@@ -1,0 +1,36 @@
+* Goal
+The basic goal is to "grow" some neural networks to replace the costly
+computation of the minimax (and related) algorithms when creating a
+board game AI.
+
+The primary backbone of the system will be a series of several
+feed-forward style ANNs. These would be trained using the standard
+backpropogation algorithm. The architecture of these networks are to
+be determined by way of genetic selection. The created networks are
+then combined using ensemble learning. A continuous version of the
+boosting algorithm will be used here.
+
+Which game to apply this to is to-be-determined (probably Checkers).
+
+* Steps
+
+1. Create game. Then, using this game and minimax (or related),
+generate a large number of test cases to train against. (Considering
+the computational power needed, this will likely need to be run for
+several days on an idle computer; thus why something faster, like a
+group of ANNs, would be preferable.)
+
+2. Create basic feed-forward ANN implementation. One slightly
+complicating factor is that these do not need to be fully connected
+networks, so serialization may pose some difficulties. Also, a more
+efficient storage mechanism for the connections and activations
+(instead of using pointer indirection) may speed up activation and
+training.
+
+3. Create an architecture growing system as a genetic algorithm. This
+should be much faster than a brute force search of all
+architectures. Additionally this should hopefully allow for the
+searching of non-fully connected networks.
+
+4. Combine the network architectures created by (3) and use them in an
+ensemble learning system to determine the final move scoring.
