@@ -17,12 +17,20 @@ namespace ANN {
         Neuron() : activation(0), input(0), delta(0) {
         }
 
+        double getInput() const {
+            return input;
+        }
+
         double getActivation() const {
             return activation;
         }
 
         double getDelta() const {
             return delta;
+        }
+
+        void setInput(double in) {
+            input = in;
         }
 
         void setActivation(double act) {

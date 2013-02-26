@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = ANN_Driver
-CONFIG += warn_on thread
+CONFIG += warn_on thread console debug
 HEADERS =
 SOURCES = Driver.cpp
 OBJECTS_DIR = ../build

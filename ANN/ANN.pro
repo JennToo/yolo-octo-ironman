@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG = staticlib warn_on
+CONFIG = staticlib warn_on debug
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
 SOURCES = NeuralNet.cpp Connection.cpp

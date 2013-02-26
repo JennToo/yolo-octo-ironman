@@ -37,7 +37,7 @@ namespace ANN {
         ~NeuralNet();
 
         void computeActivation(const Input& input);
-        std::vector<double> getActivation() const;
+        Output getActivation() const;
         void train(const std::vector<Example>& examples, double alpha, double stop, unsigned maxIterations);
     };
 }
