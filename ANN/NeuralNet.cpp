@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <algorithm>
 
 namespace ANN {
     NeuralNet::NeuralNet(const std::vector<unsigned>& topology) {
@@ -13,6 +14,7 @@ namespace ANN {
         for(std::size_t lay = 0; lay < topology.size(); lay++) {
             unsigned layerSize = topology[lay];
             Layer layer;
+            layer.neurons.resize(layerSize);
 
             // Generate each neuron on current layer
             for(unsigned i = 0; i < layerSize; i++) {
@@ -22,6 +24,7 @@ namespace ANN {
                 // to connect to
                 if(lay != 0) {
                     Layer& prev = layers[lay-1];
+
                     for(std::size_t prevI = 0; prevI < prev.neurons.size(); prevI++) {
                         new Connection(prev.neurons[prevI], neuron, 0.1);
                     }
@@ -66,6 +69,7 @@ namespace ANN {
             for(std::size_t j = 0; j < lay.neurons.size(); j++) {
                 Neuron* neuron = lay.neurons[j];
                 double input = 0.0;
+
                 // Sum activation * weight of each connected Neuron
                 // from previous layer
                 for(std::size_t i = 0; i < neuron->inputs.size(); i++) {
@@ -82,16 +86,102 @@ namespace ANN {
 
     Output NeuralNet::getActivation() const {
         Output toRet;
+
         // The last layer is the output layer
         const Layer& layer = layers[layers.size()-1];
         for(std::size_t i = 0; i < layer.neurons.size(); i++) {
             toRet.values.push_back(layer.neurons[i]->getActivation());
         }
+
         return toRet;
+    }
+
+    double NeuralNet::getTotalError(const Example& ref) {
+        // Get net's current best classification
+        computeActivation(ref.input);
+        Output netout = getActivation();
+
+        double error = 0.0;
+        for(std::size_t i = 0; i < netout.values.size(); i++) {
+            error += fabs(netout.values[i] - ref.output.values[i]);
+        }
+
+        return error;
     }
 
     void NeuralNet::train(const std::vector<Example>& examples, double alpha,
                           double stop, unsigned maxIterations) {
-        //choo choo
+        double error;
+        unsigned iterations = 0;
+        std::vector<Example> shuffled(examples);
+
+        do {
+            // Shuffling the examples speeds up process greatly
+            std::random_shuffle(shuffled.begin(), shuffled.end());
+
+            // Process each example
+            std::vector<Example>::iterator iter;
+            for(iter = shuffled.begin(); iter != shuffled.end(); iter++) {
+                trainExample(*iter, alpha);
+                error += getTotalError(*iter);
+            }
+
+            error = error / examples.size();
+            iterations++;
+        } while(error > stop && iterations <= maxIterations);
+    }
+
+    void NeuralNet::trainExample(const Example& example, double alpha) {
+        computeActivation(example.input);
+
+        // Compute initial deltas on output layer
+        Layer& outputLayer = layers[layers.size() - 1];
+        for(std::size_t i = 0; i < outputLayer.neurons.size(); i++) {
+            Neuron* neuron = outputLayer.neurons[i];
+            double activ = neuron->getActivation();
+
+            // s'(x) = s(x) * (1 - s(x)) for optimization
+            // preventing two calls to exp(x)
+            double deriv = activ * (1 - activ);
+
+            neuron->setDelta(deriv * (example.output.values[i] - activ));
+        }
+
+        // Operate on each layer backwards
+        for(std::size_t layerI = layers.size()-2; layerI > 0; layerI--) {
+            Layer& layer = layers[layerI];
+
+            // Compute delta for each node in layer
+            for(std::size_t i = 0; i < layer.neurons.size(); i++) {
+                Neuron* neuron = layer.neurons[i];
+                double activ = neuron->getActivation();
+                double deriv = activ * (1 - activ);
+
+                // Sum over next layer's deltas
+                double sum = 0.0;
+                for(std::size_t j = 0; j < neuron->outputs.size(); j++) {
+                    Connection* con = neuron->outputs[j];
+                    assert(con->send == neuron);
+                    sum += con->weight * con->recv->getDelta();
+                }
+
+                neuron->setDelta(sum * deriv);
+            }
+        }
+
+        // Apply delta to weights
+        for(std::size_t layerI = 1; layerI < layers.size(); layerI++) {
+            Layer& layer = layers[layerI];
+
+            for(std::size_t j = 0; j < layer.neurons.size(); j++) {
+                Neuron* neuron = layer.neurons[j];
+
+                // Update each input connection
+                for(std::size_t i = 0; i < neuron->inputs.size(); i++) {
+                    Connection* con = neuron->inputs[i];
+                    con->weight = con->weight + alpha * con->send->getActivation() * neuron->getDelta();
+                }
+            }
+        }
     }
 }

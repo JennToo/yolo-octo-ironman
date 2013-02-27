@@ -5,23 +5,11 @@
 
 #include "Neuron.hpp"
 #include "Connection.hpp"
+#include "Examples.hpp"
 
 namespace ANN {
     struct Layer {
         std::vector<Neuron*> neurons;
-    };
-
-    struct Input {
-        std::vector<double> values;
-    };
-
-    struct Output {
-        std::vector<double> values;
-    };
-
-    struct Example {
-        Input in;
-        Output out;
     };
 
     class NeuralNet {
@@ -31,6 +19,8 @@ namespace ANN {
 
         // Only used to delete the graph on destructor
         std::vector<Neuron*> graph;
+
+        void trainExample(const Example& example, double alpha);
     public:
         NeuralNet(const std::vector<unsigned>& topology);
         NeuralNet(const std::string& file);
@@ -38,6 +28,7 @@ namespace ANN {
 
         void computeActivation(const Input& input);
         Output getActivation() const;
+        double getTotalError(const Example& ref);
         void train(const std::vector<Example>& examples, double alpha, double stop, unsigned maxIterations);
     };
 }
