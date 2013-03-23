@@ -25,14 +25,14 @@ namespace ANN {
                     Layer* prev = &layers[lay-1];
 
                     for(std::size_t prevI = 0; prevI < prev->neurons.size(); prevI++) {
-                        new Connection(prev->neurons[prevI], neuron, 0.1);
+                        new Connection(prev->neurons[prevI], neuron, randRange(-1.0, 1.0));
 		    }
 
                     // Bias node isn't actually stored in a layer
                     Neuron* bias = new Neuron();
                     bias->setActivation(1.0);
                     graph.push_back(bias);
-                    new Connection(bias, neuron, 0.0);
+                    new Connection(bias, neuron, randRange(-1.0, 1.0));
                 }
 
                 layer.neurons.push_back(neuron);
@@ -129,6 +129,10 @@ namespace ANN {
 
             error = error / examples.size();
             iterations++;
+
+	    if(iterations % 1000 == 0) {
+		std::cout << "After " << iterations << " iteraitons error is: " << error << std::endl;
+	    }
         } while(error > stop && iterations <= maxIterations);
     }
 

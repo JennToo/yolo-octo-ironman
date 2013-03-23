@@ -37,18 +37,23 @@ namespace ANN {
         return toRet;
     }
 
-    void applyTransformation(Example& ex, const Transformation& trans, bool inverse) {
-        std::size_t outputSize = ex.output.values.size();
+    void applyTransformation(Output& output, const Transformation& trans, bool inverse) {
+        std::size_t outputSize = output.values.size();
         for(std::size_t i = 0; i < outputSize; i++) {
-            double newval = ex.output.values[i];
+            double newval = output.values[i];
             if(!inverse) {
                 newval = (newval - trans.offset[i]) / trans.span[i];
                 assert(newval <= 1.0 + 0.00001);
             } else {
                 newval = newval * trans.span[i] + trans.offset[i];
             }
-            ex.output.values[i] = newval;
+            output.values[i] = newval;
         }
+
+    }
+
+    void applyTransformation(Example& ex, const Transformation& trans, bool inverse) {
+	applyTransformation(ex.output, trans, inverse);
     }
 
     void applyTransformation(std::vector<Example>& examples, const Transformation& trans, bool inverse) {
@@ -65,6 +70,7 @@ namespace ANN {
             exit(1);
         }
 
+	const int total = inputs + outputs;
         std::vector<double> vals;
 
         while(!inFile.eof()) {
@@ -75,6 +81,7 @@ namespace ANN {
                 std::istringstream in(line);
                 double val;
                 while(in >> val) {
+		    std::cout << "Pushing val: " << val << std::endl;
                     vals.push_back(val);
                     if(in.peek() == ',') {
                         in.ignore();
@@ -82,12 +89,33 @@ namespace ANN {
                 }
             }
 
-            if(vals.size() % (inputs*outputs) != 0) {
+            if(vals.size() % total != 0) {
                 std::cerr << "Malformed input line in file: " << file
                           << " line: " << line << std::endl;
                 exit(1);
-            }
-        }
+            } else {
+		Example ex;
 
+		ex.input.values.assign(vals.begin(), vals.begin() + inputs);
+		ex.output.values.assign(vals.begin() + inputs, vals.end());
+		examples.push_back(ex);
+
+		vals.clear();
+	    }
+        }
+    }
+
+    void printExamples(const std::vector<Example>& examples) {
+	for(std::size_t i = 0; i < examples.size(); i++) {
+	    const Example& ex = examples[i];
+	    for(std::size_t in = 0; in < ex.input.values.size(); in++) {
+		std::cout << ex.input.values[in] << " ";
+	    }
+	    std::cout << "-> ";
+	    for(std::size_t out = 0; out < ex.output.values.size(); out++) {
+		std::cout << ex.output.values[out] << " ";
+	    }
+	    std::cout << std::endl;
+	}
     }
 }
