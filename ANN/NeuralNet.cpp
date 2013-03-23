@@ -14,7 +14,6 @@ namespace ANN {
         for(std::size_t lay = 0; lay < topology.size(); lay++) {
             unsigned layerSize = topology[lay];
             Layer layer;
-            layer.neurons.resize(layerSize);
 
             // Generate each neuron on current layer
             for(unsigned i = 0; i < layerSize; i++) {
@@ -23,11 +22,11 @@ namespace ANN {
                 // The input (first) layer doesn't have any inputs
                 // to connect to
                 if(lay != 0) {
-                    Layer& prev = layers[lay-1];
+                    Layer* prev = &layers[lay-1];
 
-                    for(std::size_t prevI = 0; prevI < prev.neurons.size(); prevI++) {
-                        new Connection(prev.neurons[prevI], neuron, 0.1);
-                    }
+                    for(std::size_t prevI = 0; prevI < prev->neurons.size(); prevI++) {
+                        new Connection(prev->neurons[prevI], neuron, 0.1);
+		    }
 
                     // Bias node isn't actually stored in a layer
                     Neuron* bias = new Neuron();
@@ -35,9 +34,11 @@ namespace ANN {
                     graph.push_back(bias);
                     new Connection(bias, neuron, 0.0);
                 }
+
                 layer.neurons.push_back(neuron);
                 graph.push_back(neuron);
             }
+
             layers.push_back(layer);
         }
     }
