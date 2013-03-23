@@ -18,13 +18,13 @@ namespace ANN {
     };
 
     struct Transformation {
-        double offset;
-        double span;
+        std::vector<double> offset;
+        std::vector<double> span;
     };
 
     Transformation getTransformation(const std::vector<Example>& examples);
     void applyTransformation(Example& ex, const Transformation& trans, bool inverse = false);
     void applyTransformation(std::vector<Example>& examples, const Transformation& trans, bool inverse = false);
 
-    void loadExamplesFromFile(const std::string& file, std::vector<Example>& output);
+    void loadExamplesFromFile(const std::string& file, std::vector<Example>& output, std::size_t inputs, std::size_t outputs);
 }
