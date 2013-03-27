@@ -88,5 +88,7 @@ namespace ANN {
          * over the entire example set
          */
         void train(const std::vector<Example>& examples, double alpha, double stop, unsigned maxIterations);
+
+        void printNetwork() const;
     };
 }

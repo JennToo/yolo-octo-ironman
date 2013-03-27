@@ -8,6 +8,10 @@ namespace ANN {
         return 1.0 / (1.0 + std::exp(-x));
     }
 
+    double sigmoid_prime(double x) {
+        return sigmoid(x) * (1 - sigmoid(x));
+    }
+
     double randRange(double low, double high) {
 	double condense = (double)(std::rand()) / (double)(RAND_MAX);
 	return condense * (high - low) + low;

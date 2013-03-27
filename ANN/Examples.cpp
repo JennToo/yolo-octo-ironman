@@ -81,7 +81,6 @@ namespace ANN {
                 std::istringstream in(line);
                 double val;
                 while(in >> val) {
-		    std::cout << "Pushing val: " << val << std::endl;
                     vals.push_back(val);
                     if(in.peek() == ',') {
                         in.ignore();

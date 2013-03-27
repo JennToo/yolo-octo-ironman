@@ -25,14 +25,14 @@ namespace ANN {
                     Layer* prev = &layers[lay-1];
 
                     for(std::size_t prevI = 0; prevI < prev->neurons.size(); prevI++) {
-                        new Connection(prev->neurons[prevI], neuron, randRange(-1.0, 1.0));
+                        new Connection(prev->neurons[prevI], neuron, randRange(-0.1, 0.1));
 		    }
 
                     // Bias node isn't actually stored in a layer
                     Neuron* bias = new Neuron();
                     bias->setActivation(1.0);
                     graph.push_back(bias);
-                    new Connection(bias, neuron, randRange(-1.0, 1.0));
+                    new Connection(bias, neuron, randRange(-0.1, 0.1));
                 }
 
                 layer.neurons.push_back(neuron);
@@ -110,6 +110,27 @@ namespace ANN {
         return error;
     }
 
+    void NeuralNet::printNetwork() const {
+        for(std::size_t i = 0; i < layers.size(); i++) {
+            for(std::size_t n = 0; n < layers[i].neurons.size(); n++) {
+                Neuron* neuron = layers[i].neurons[n];
+                std::cout << "Neuron " << i << ":" << n << std::endl;
+                std::cout << "   Act: " << neuron->getActivation() << " Delta: " << neuron->getDelta() << std::endl;
+                std::cout << "   Input count: " << neuron->inputs.size() << " Output count: " << neuron->outputs.size() << std::endl;
+                std::cout << "   Input Weights:\n";
+                for(std::size_t c = 0; c < neuron->inputs.size(); c++) {
+                    std::cout << "      " << neuron->inputs[c]->weight << " <- " << i+1 << ":" << c
+                              << " (Input activation: " << neuron->inputs[c]->send->getActivation() << ")" << std::endl;
+                }
+                std::cout << "   Output Weights:\n";
+                for(std::size_t c = 0; c < neuron->outputs.size(); c++) {
+                    std::cout << "      " << neuron->outputs[c]->weight << " -> " << i+1 << ":" << c << std::endl;
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+
     void NeuralNet::train(const std::vector<Example>& examples, double alpha,
                           double stop, unsigned maxIterations) {
         double error;
@@ -166,7 +187,7 @@ namespace ANN {
                 double sum = 0.0;
                 for(std::size_t j = 0; j < neuron->outputs.size(); j++) {
                     Connection* con = neuron->outputs[j];
-                    assert(con->send == neuron);
+
                     sum += con->weight * con->recv->getDelta();
                 }
 
@@ -175,7 +196,7 @@ namespace ANN {
         }
 
         // Apply delta to weights
-        for(std::size_t layerI = 1; layerI < layers.size(); layerI++) {
+        for(std::size_t layerI = 0; layerI < layers.size(); layerI++) {
             Layer& layer = layers[layerI];
 
             for(std::size_t j = 0; j < layer.neurons.size(); j++) {

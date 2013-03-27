@@ -14,25 +14,25 @@ int main(int argc, char** argv) {
     std::srand((unsigned)std::time(0));
 
     std::vector<unsigned> top;
-    top.push_back(1);
-    top.push_back(3);
-    top.push_back(3);
+    top.push_back(11);
+    top.push_back(6);
+    top.push_back(5);
     top.push_back(1);
     ANN::NeuralNet network(top);
 
     std::vector<ANN::Example> examples;
-    ANN::loadExamplesFromFile("solar_radiation.txt", examples, 1, 1);
-    std::cout << "Loaded " << examples.size() << " examples from file\nOriginals:\n";
-    ANN::printExamples(examples);
+    ANN::loadExamplesFromFile("red_wine_quality.txt", examples, 11, 1);
+    std::cerr << "Loaded " << examples.size() << " examples from file\nOriginals:\n";
+    //ANN::printExamples(examples);
 
     ANN::Transformation t = ANN::getTransformation(examples);
     ANN::applyTransformation(examples, t, false);
     std::cout << "After transform:\n";
-    ANN::printExamples(examples);
+    //ANN::printExamples(examples);
 
-    std::cout << std::setprecision(6) << std::fixed;
+    //std::cout << std::setprecision(6) << std::fixed;
 
-    network.train(examples, 1.0, 0.0, 100000);
+    network.train(examples, 0.1, 0.0, 10000);
     for(std::size_t i = 0; i < examples.size(); i++) {
         network.computeActivation(examples[i].input);
         ANN::Output out = network.getActivation();
