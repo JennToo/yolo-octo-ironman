@@ -87,7 +87,33 @@ namespace ANN {
          * @param maxIterations The maximum number of times to iterate
          * over the entire example set
          */
-        void train(const std::vector<Example>& examples, double alpha, double stop, unsigned maxIterations);
+        void train(const std::vector<Example>& examples, double alpha,
+                   double stop, unsigned maxIterations);
+
+        /**
+         * Similar to train, but uses a weighting system for use in
+         * ensemble systems
+         *
+         * @param examples A set of examples to train against. The
+         * outputs are expected to already be scaled to [0,1]
+         *
+         * @param weights Weights corresponding to the given
+         * examples. Each value is expected to be on [0, inf), where a
+         * higher value means the example is more likely to be used
+         * for training
+         *
+         * @param alpha The learning rate to use during training. See
+         * the backpropogation algorithm for details
+         *
+         * @param stop The average error for the pass-through to
+         * consider completion at
+         *
+         * @param maxIterations The maximum number of examples to
+         * process
+         */
+        void weightedTrain(const std::vector<Example>& examples,
+                           const std::vector<double>& weights, double alpha,
+                           double stop, unsigned maxIterations);
 
         void printNetwork() const;
     };

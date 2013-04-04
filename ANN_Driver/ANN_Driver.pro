@@ -8,3 +8,4 @@ MOC_DIR = ../build
 INCLUDEPATH += ../ANN
 LIBS += -L../bin -lANN
 DESTDIR = ../bin
+QMAKE_CXXFLAGS += -std=c++0x

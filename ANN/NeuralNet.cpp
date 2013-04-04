@@ -1,5 +1,6 @@
 #include "NeuralNet.hpp"
 #include "Util.hpp"
+#include "DiscreteClassifier.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -24,8 +25,10 @@ namespace ANN {
                 if(lay != 0) {
                     Layer* prev = &layers[lay-1];
 
-                    for(std::size_t prevI = 0; prevI < prev->neurons.size(); prevI++) {
-                        new Connection(prev->neurons[prevI], neuron, randRange(-0.1, 0.1));
+                    for(std::size_t prevI = 0; prevI < prev->neurons.size();
+                        prevI++) {
+                        new Connection(prev->neurons[prevI], neuron,
+                                       randRange(-0.1, 0.1));
 		    }
 
                     // Bias node isn't actually stored in a layer
@@ -115,16 +118,25 @@ namespace ANN {
             for(std::size_t n = 0; n < layers[i].neurons.size(); n++) {
                 Neuron* neuron = layers[i].neurons[n];
                 std::cout << "Neuron " << i << ":" << n << std::endl;
-                std::cout << "   Act: " << neuron->getActivation() << " Delta: " << neuron->getDelta() << std::endl;
-                std::cout << "   Input count: " << neuron->inputs.size() << " Output count: " << neuron->outputs.size() << std::endl;
+                std::cout << "   Act: " << neuron->getActivation() << " Delta: "
+                          << neuron->getDelta() << std::endl;
+
+                std::cout << "   Input count: " << neuron->inputs.size()
+                          << " Output count: " << neuron->outputs.size()
+                          << std::endl;
+
                 std::cout << "   Input Weights:\n";
                 for(std::size_t c = 0; c < neuron->inputs.size(); c++) {
-                    std::cout << "      " << neuron->inputs[c]->weight << " <- " << i+1 << ":" << c
-                              << " (Input activation: " << neuron->inputs[c]->send->getActivation() << ")" << std::endl;
+                    std::cout << "      " << neuron->inputs[c]->weight << " <- "
+                              << i+1 << ":" << c << " (Input activation: "
+                              << neuron->inputs[c]->send->getActivation() << ")"
+                              << std::endl;
                 }
+
                 std::cout << "   Output Weights:\n";
                 for(std::size_t c = 0; c < neuron->outputs.size(); c++) {
-                    std::cout << "      " << neuron->outputs[c]->weight << " -> " << i+1 << ":" << c << std::endl;
+                    std::cout << "      " << neuron->outputs[c]->weight << " -> "
+                              << i+1 << ":" << c << std::endl;
                 }
                 std::cout << std::endl;
             }
@@ -138,6 +150,7 @@ namespace ANN {
         std::vector<Example> shuffled(examples);
 
         do {
+            error = 0.0;
             // Shuffling the examples speeds up process greatly
             std::random_shuffle(shuffled.begin(), shuffled.end());
 
@@ -152,9 +165,49 @@ namespace ANN {
             iterations++;
 
 	    if(iterations % 1000 == 0) {
-		std::cout << "After " << iterations << " iteraitons error is: " << error << std::endl;
+		std::cout << "After " << iterations << " iteraitons error is: "
+                          << error << std::endl;
 	    }
         } while(error > stop && iterations <= maxIterations);
+    }
+
+    void NeuralNet::weightedTrain(const std::vector<Example>& examples,
+                                  const std::vector<double>& weights,
+                                  double alpha, double stop,
+                                  unsigned maxIterations) {
+        double error;
+        unsigned iterations = 0;
+
+        std::vector<double> gradientWeights;
+        double sum = 0.0;
+        for(std::size_t i = 0; i < weights.size(); i++) {
+            sum += weights[i];
+            gradientWeights.push_back(sum);
+        }
+
+        double maxWeight = *(weights.end()-1);
+        DiscreteClassifier chooser(gradientWeights);
+
+        bool done = false;
+        do {
+            error = 0.0;
+
+            for(std::size_t i = 0; i < examples.size(); i++) {
+                double theChosenOne = randRange(0.0, maxWeight);
+                std::size_t j = chooser.getClassificationIndex(theChosenOne,
+                                                               ClassifierMethod::CEILING);
+                trainExample(examples[j], alpha);
+            }
+
+            error = error / examples.size();
+            if(error < stop) {
+                done = true;
+            }
+
+	    if(iterations % 1000 == 0) {
+		std::cout << "After " << iterations << " iteraitons error is: " << error << std::endl;
+	    }
+        } while(!done && iterations < maxIterations);
     }
 
     void NeuralNet::trainExample(const Example& example, double alpha) {

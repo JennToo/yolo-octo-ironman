@@ -16,4 +16,8 @@ namespace ANN {
 	double condense = (double)(std::rand()) / (double)(RAND_MAX);
 	return condense * (high - low) + low;
     }
+
+    bool tol_equal(double val1, double val2, double tol = 0.00001) {
+        return std::fabs(val1 - val2) < tol;
+    }
 }
