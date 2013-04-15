@@ -1,4 +1,5 @@
 #include "Ensemble.hpp"
+#include <map>
 
 namespace ANN {
     void Ensemble::adaBoost(const Examples& examples, unsigned k) {
@@ -45,6 +46,51 @@ namespace ANN {
             // Store classifier with it's vote-weight
             learners.push_back(network);
             learnerWeights.push_back(std::log((1-error)/error));
+        }
+    }
+
+    void Ensemble::classify(const Input& input, Output& output) {
+        std::vector<std::vector<std::size_t>> votes;
+
+        for(std::size_t i = 0; i < learners.size(); i++) {
+            std::vector<std::size_t> values;
+            // Compute the current learner's output
+            NeuralNetwork* net = learners[i];
+            net->computeActivation(input);
+            Output compOut = net->getActivation();
+
+            // Add each output to the vote (the classifier index, to
+            // allow for == comparison later)
+            for(std::size_t out = 0; out < compOut.values.size(); out++) {
+                std::size_t index = clasifiers[out].getClassificationIndex(compOut.values[out],
+                                                                           ClassifierMethod::ROUND);
+                values.push_back(index);
+            }
+            votes.push_back(values);
+        }
+        output.values.clear();
+
+        // Get votes for each output
+        for(std::size_t out = 0; out < votes[0].size(); out++) {
+            // Maps each choice to a vote weight
+            std::map<std::size_t, double> tally;
+            for(std::size_t i = 0; i < learners.size(); i++) {
+                std::size_t vote = votes[i][out];
+                tally[vote] += learnerWeights[i];
+            }
+
+            std::size_t maxVoteIndex = (*tally.begin()).first;
+            double maxVoteWeight = (*tally.begin()).second;
+            for(std::map<std::size_t, double>::iterator i = tally.begin();
+                i != tally.end();
+                i++) {
+                if((*i).second > maxVoteWeight) {
+                    maxVoteIndex = (*i).first;
+                    maxVoteWeight = (*i).second;
+                }
+            }
+
+            output.values.push_back(classifiers[out].getIndexValue(maxVoteIndex));
         }
     }
 }
