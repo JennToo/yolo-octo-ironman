@@ -1,8 +1,9 @@
 #include "DiscreteClassifier.hpp"
+#include "Util.hpp"
 
 namespace ANN {
     std::size_t DiscreteClassifier::getClassificationIndex(double continuousValue,
-                                                          ClassifierMethod method) {
+                                                          ClassifierMethod method) const {
         std::size_t low = 0, high = values.size() - 1;
         while((high - low) > 1) {
             std::size_t mid = (high + low) / 2;
@@ -27,16 +28,16 @@ namespace ANN {
         }
     }
 
-    double DiscreteClassifier::getIndexValue(std::size_t index) {
+    double DiscreteClassifier::getIndexValue(std::size_t index) const {
         return values[index];
     }
 
-    static bool correctClassification(const std::vector<DiscreteClassifier>& cls,
+    static bool correctClassification(const std::vector<DiscreteClassifier>& classifiers,
                                       const Output& compOut, const Output& exOut) {
-        for(std::size_t out = 0; out < cls.size(); out++) {
-            const DiscreteClassifier& classifer = classifiers[out];
-            std::size_t i = classifier.getClassificationIndex(compOut.values[out]);
-            bool correct = tol_equal(classifer.getIndexValue(i), exOut.values[out]);
+        for(std::size_t out = 0; out < classifiers.size(); out++) {
+            const DiscreteClassifier& classifier = classifiers[out];
+            std::size_t i = classifier.getClassificationIndex(compOut.values[out], ClassifierMethod::ROUND);
+            bool correct = tol_equal(classifier.getIndexValue(i), exOut.values[out]);
             if(!correct)
                 return false;
         }
