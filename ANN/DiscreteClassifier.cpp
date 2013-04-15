@@ -30,4 +30,16 @@ namespace ANN {
     double DiscreteClassifier::getIndexValue(std::size_t index) {
         return values[index];
     }
+
+    static bool correctClassification(const std::vector<DiscreteClassifier>& cls,
+                                      const Output& compOut, const Output& exOut) {
+        for(std::size_t out = 0; out < cls.size(); out++) {
+            const DiscreteClassifier& classifer = classifiers[out];
+            std::size_t i = classifier.getClassificationIndex(compOut.values[out]);
+            bool correct = tol_equal(classifer.getIndexValue(i), exOut.values[out]);
+            if(!correct)
+                return false;
+        }
+        return true;
+    }
 }

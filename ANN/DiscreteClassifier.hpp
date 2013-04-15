@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "Examples.hpp"
+
 namespace ANN {
     enum ClassifierMethod {
         FLOOR, CEILING, ROUND
@@ -13,8 +15,10 @@ namespace ANN {
         DiscreteClassifier(const std::vector<double>& values) : values(values) {
         }
 
-        double getIndexValue(std::size_t index);
+        double getIndexValue(std::size_t index) const;
         std::size_t getClassificationIndex(double continuousValue,
-                                           ClassifierMethod method);
+                                           ClassifierMethod method) const;
+        static bool correctClassification(const std::vector<DiscreteClassifier>& cls,
+                                          const Output& compOut, const Output& exOut);
     };
 }
