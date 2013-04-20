@@ -1,29 +1,56 @@
 #include "Ensemble.hpp"
+#include "Util.hpp"
 #include <map>
+#include <cmath>
+#include <iostream>
 
 namespace ANN {
+    bool correctClassification(const std::vector<DiscreteClassifier>& classifiers,
+                                      const Output& compOut, const Output& exOut) {
+        for(std::size_t out = 0; out < classifiers.size(); out++) {
+            const DiscreteClassifier& classifier = classifiers[out];
+            std::size_t i = classifier.getClassificationIndex(compOut.values[out], ClassifierMethod::ROUND);
+            bool correct = tol_equal(classifier.getIndexValue(i), exOut.values[out]);
+            if(!correct)
+                return false;
+        }
+        return true;
+    }
+
     void Ensemble::adaBoost(const Examples& examples, unsigned k) {
         std::vector<double> exampleWeights;
         double initial = 1.0 / examples.size();
-        examplesWeights.resize(examples.size, initial);
+        exampleWeights.resize(examples.size(), initial);
+
+	// Create classifiers
+	for(std::size_t i = 0; i < examples[0].output.values.size(); i++) {
+	    std::vector<double> values;
+	    for(std::size_t j = 0; j < examples.size(); j++) {
+		values.push_back(examples[j].output.values[i]);
+	    }
+
+	    classifiers.push_back(DiscreteClassifier(values));
+	}
 
         // Single topology to start
-        std::vector<unsigned> topology = {11, 4, 1};
 
         // Generate learners
         for(std::size_t i = 0; i < k; i++) {
-            NeuralNetwork* network = new NeuralNetwork(topology);
-            network->weightedTrain(examples, exampleWeights, 0.1, 0.01, 1000);
+	    std::vector<unsigned> topology = {11, std::rand() % 5 + 4, std::rand() % 5 + 4, 1};
+	    std::cout << "Created topology: " << topology[1] << std::endl;
+
+            NeuralNet* network = new NeuralNet(topology);
+            network->weightedTrain(examples, exampleWeights, 0.1, 0.0, 200000);
 
             // Check the classifications
             std::vector<bool> classifications;
 
             for(std::size_t j = 0; j < examples.size(); j++) {
                 const Example& example = examples[j];
-                network->computeActivation(example.inputs);
+                network->computeActivation(example.input);
                 Output activation = network->getActivation();
 
-                classifications.push_back(DiscreteClassifier::correctClassification(classifiers, activation, example.output));
+                classifications.push_back(correctClassification(classifiers, activation, example.output));
             }
 
             // Find out how poor the classifier is
@@ -44,9 +71,15 @@ namespace ANN {
             normalize_vector(exampleWeights);
 
             // Store classifier with it's vote-weight
+	    std::cout << "Error: " << error << std::endl;
             learners.push_back(network);
             learnerWeights.push_back(std::log((1-error)/error));
         }
+
+	std::cout << "Final weights for each network: \n";
+	for(std::size_t i = 0; i < learnerWeights.size(); i++) {
+	    std::cout << learnerWeights[i] << std::endl;
+	}
     }
 
     void Ensemble::classify(const Input& input, Output& output) {
@@ -55,14 +88,14 @@ namespace ANN {
         for(std::size_t i = 0; i < learners.size(); i++) {
             std::vector<std::size_t> values;
             // Compute the current learner's output
-            NeuralNetwork* net = learners[i];
+            NeuralNet* net = learners[i];
             net->computeActivation(input);
             Output compOut = net->getActivation();
 
             // Add each output to the vote (the classifier index, to
             // allow for == comparison later)
             for(std::size_t out = 0; out < compOut.values.size(); out++) {
-                std::size_t index = clasifiers[out].getClassificationIndex(compOut.values[out],
+                std::size_t index = classifiers[out].getClassificationIndex(compOut.values[out],
                                                                            ClassifierMethod::ROUND);
                 values.push_back(index);
             }

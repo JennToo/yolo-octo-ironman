@@ -1,5 +1,7 @@
 #include <NeuralNet.hpp>
 #include <Examples.hpp>
+#include <Ensemble.hpp>
+#include <Util.hpp>
 
 #include <vector>
 #include <iostream>
@@ -32,18 +34,37 @@ int main(int argc, char** argv) {
 
     //std::cout << std::setprecision(6) << std::fixed;
 
-    network.train(examples, 0.1, 0.0, 10000);
+    ANN::Ensemble learner;
+    learner.adaBoost(examples, 300);
+    int incorrect = 0;
+    for(std::size_t i = 0; i < examples.size(); i++) {
+	ANN::Output classification;
+	learner.classify(examples[i].input, classification);
+	double ex = examples[i].output.values[0];
+        double got = classification.values[0];
+        std::cout << "Expected: " << ex
+                  << " Got: " << got
+                  << std::endl;
+	if(!ANN::tol_equal(ex, got))
+	    incorrect++;
+    }
+
+    std::cout << "Misclassified " << incorrect << " examples ("
+	      << 100 * std::fabs((double)incorrect / examples.size())
+	      << "%)\n";
+
+    /*network.train(examples, 0.1, 0.0, 10000);
     for(std::size_t i = 0; i < examples.size(); i++) {
         network.computeActivation(examples[i].input);
         ANN::Output out = network.getActivation();
         double ex = examples[i].output.values[0];
         double got = out.values[0];
-        /*std::cout << "Expected: " << ex
+        std::cout << "Expected: " << ex
                   << " Got: " << got
                   << " Error%: " << 100 * std::fabs((ex - got) / ex)
-                  << std::endl;*/
+                  << std::endl;
 	std::cout << ex << "," << got << std::endl;
-    }
+    }*/
 
     return 0;
 }

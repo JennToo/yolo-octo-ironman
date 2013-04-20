@@ -17,6 +17,8 @@ namespace ANN {
         Output output;
     };
 
+    typedef std::vector<Example> Examples;
+
     struct Transformation {
         std::vector<double> offset;
         std::vector<double> span;

@@ -197,6 +197,7 @@ namespace ANN {
                 std::size_t j = chooser.getClassificationIndex(theChosenOne,
                                                                ClassifierMethod::CEILING);
                 trainExample(examples[j], alpha);
+		iterations++;
             }
 
             error = error / examples.size();
