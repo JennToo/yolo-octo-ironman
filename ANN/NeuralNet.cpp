@@ -185,7 +185,7 @@ namespace ANN {
             gradientWeights.push_back(sum);
         }
 
-        double maxWeight = *(weights.end()-1);
+        double maxWeight = std::accumulate(weights.begin(), weights.end(), 0);
         DiscreteClassifier chooser(gradientWeights);
 
         bool done = false;

@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     //std::cout << std::setprecision(6) << std::fixed;
 
     ANN::Ensemble learner;
-    learner.adaBoost(examples, 300);
+    learner.adaBoost(examples, 50);
     int incorrect = 0;
     for(std::size_t i = 0; i < examples.size(); i++) {
 	ANN::Output classification;

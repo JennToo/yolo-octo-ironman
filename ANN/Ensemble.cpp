@@ -34,13 +34,20 @@ namespace ANN {
 
         // Single topology to start
 
+	bool kept = true;
         // Generate learners
         for(std::size_t i = 0; i < k; i++) {
-	    std::vector<unsigned> topology = {11, std::rand() % 5 + 4, std::rand() % 5 + 4, 1};
-	    std::cout << "Created topology: " << topology[1] << std::endl;
+	    if(!kept) {
+		kept = true;
+		i--;
+	    }
+
+	    std::cout << "Network #" << i << std::endl;
+
+	    std::vector<unsigned> topology = {11, std::rand() % 5 + 4, std::rand() % 6 + 6, std::rand() % 6 + 6, 1};
 
             NeuralNet* network = new NeuralNet(topology);
-            network->weightedTrain(examples, exampleWeights, 0.1, 0.0, 200000);
+            network->weightedTrain(examples, exampleWeights, 0.1, 0.0, 600000);
 
             // Check the classifications
             std::vector<bool> classifications;
@@ -60,6 +67,12 @@ namespace ANN {
                     error += exampleWeights[j];
             }
 
+	    if(error > 0.55 && i > 0) {
+		std::cout << "Ommitting error: " << error << std::endl;
+		kept = false;
+		continue;
+	    }
+
             // Adjust weights based on the classifier's error
             double factor = error / (1 - error);
             for(std::size_t j = 0; j < examples.size(); j++) {
@@ -71,9 +84,23 @@ namespace ANN {
             normalize_vector(exampleWeights);
 
             // Store classifier with it's vote-weight
-	    std::cout << "Error: " << error << std::endl;
+	    std::cout << "Weighted_Error " << error << std::endl;
             learners.push_back(network);
             learnerWeights.push_back(std::log((1-error)/error));
+
+
+	    // Unweighted training error (for debug)
+	    int incorrect = 0;
+	    for(std::size_t ii = 0; ii < examples.size(); ii++) {
+		Output classification;
+		classify(examples[ii].input, classification);
+		double ex = examples[ii].output.values[0];
+		double got = classification.values[0];
+		if(!tol_equal(ex, got))
+		    incorrect++;
+	    }
+	    std::cout << "Unweighted_Error " << (float)(incorrect) / examples.size() << std::endl;
+
         }
 
 	std::cout << "Final weights for each network: \n";
