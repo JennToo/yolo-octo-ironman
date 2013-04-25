@@ -1,14 +1,14 @@
 #pragma once
 
 namespace ANN {
-    class Neuron;
+class Neuron;
 
-    class Connection {
-    public:
-        Neuron* send;
-        Neuron* recv;
-        double weight;
+class Connection {
+public:
+    Neuron* send;
+    Neuron* recv;
+    double weight;
 
-        Connection(Neuron*, Neuron*, double);
-    };
+    Connection(Neuron*, Neuron*, double);
+};
 }

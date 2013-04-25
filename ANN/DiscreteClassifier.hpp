@@ -5,18 +5,18 @@
 #include "Examples.hpp"
 
 namespace ANN {
-    enum ClassifierMethod {
-        FLOOR, CEILING, ROUND
-    };
+enum ClassifierMethod {
+    FLOOR, CEILING, ROUND
+};
 
-    class DiscreteClassifier {
-        std::vector<double> values;
-    public:
-        DiscreteClassifier(const std::vector<double>& values) : values(values) {
-        }
+class DiscreteClassifier {
+    std::vector<double> values;
+public:
+    DiscreteClassifier(const std::vector<double>& values) : values(values) {
+    }
 
-        double getIndexValue(std::size_t index) const;
-        std::size_t getClassificationIndex(double continuousValue,
-                                           ClassifierMethod method) const;
-    };
+    double getIndexValue(std::size_t index) const;
+    std::size_t getClassificationIndex(double continuousValue,
+                                       ClassifierMethod method) const;
+};
 }

@@ -1,0 +1,1 @@
+g++ -IANN/ -IANN_Driver/ ANN/*.cpp ANN_Driver/*.cpp -std=c++0x -o ANN_Driver.exe -O3 -mtune=native -march=native -fomit-frame-pointer

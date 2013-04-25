@@ -5,40 +5,40 @@
 #include "Connection.hpp"
 
 namespace ANN {
-    class Neuron {
-        double activation;
-        double input;
-        double delta;
-    public:
-        // Breaking the rules in the name of speed
-        std::vector<Connection*> inputs;
-        std::vector<Connection*> outputs;
+class Neuron {
+    double activation;
+    double input;
+    double delta;
+public:
+    // Breaking the rules in the name of speed
+    std::vector<Connection*> inputs;
+    std::vector<Connection*> outputs;
 
-        Neuron() : activation(0), input(0), delta(0) {
-        }
+    Neuron() : activation(0), input(0), delta(0) {
+    }
 
-        double getInput() const {
-            return input;
-        }
+    double getInput() const {
+        return input;
+    }
 
-        double getActivation() const {
-            return activation;
-        }
+    double getActivation() const {
+        return activation;
+    }
 
-        double getDelta() const {
-            return delta;
-        }
+    double getDelta() const {
+        return delta;
+    }
 
-        void setInput(double in) {
-            input = in;
-        }
+    void setInput(double in) {
+        input = in;
+    }
 
-        void setActivation(double act) {
-            activation = act;
-        }
+    void setActivation(double act) {
+        activation = act;
+    }
 
-        void setDelta(double del) {
-            delta = del;
-        }
-    };
+    void setDelta(double del) {
+        delta = del;
+    }
+};
 }
